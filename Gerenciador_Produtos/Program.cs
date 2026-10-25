@@ -1,8 +1,7 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Gerenciador_Produtos
 {
@@ -12,62 +11,100 @@ namespace Gerenciador_Produtos
         public int Quantidade { get; set; }
         public decimal Preco { get; set; }
     }
+
     internal class Program
     {
         public static List<Produto> produtos = new List<Produto>();
-        
+
         static void CadastrarProdutos()
         {
             Console.Clear();
             int quantidade_cadastrar;
 
-            Console.Write("Digite a quanidade de produtos a ser cadastrado: ");
-            quantidade_cadastrar = int.Parse(Console.ReadLine());
+            Console.WriteLine("========== CADASTRO DE PRODUTOS ==========");
+            Console.Write("\nQuantos produtos deseja cadastrar? ");
+
+            while (!int.TryParse(Console.ReadLine(), out quantidade_cadastrar)
+                   || quantidade_cadastrar <= 0)
+            {
+                Console.Write("Quantidade inválida. Digite um número maior que zero: ");
+            }
 
             for (int i = 0; i < quantidade_cadastrar; i++)
             {
                 Console.Clear();
                 Produto produto = new Produto();
 
-                Console.WriteLine($"Produto {i + 1}: ");
+                Console.WriteLine($"========== PRODUTO {i + 1} DE {quantidade_cadastrar} ==========");
 
-                Console.Write("\nProduto: ");
+                Console.Write("\nNome do produto: ");
                 produto.Nome = Console.ReadLine();
 
-                Console.Write("Quantidade: ");
-                produto.Quantidade = int.Parse(Console.ReadLine());
+                while (string.IsNullOrWhiteSpace(produto.Nome) || int.TryParse(produto.Nome, out _))
+                {
+                    Console.Write("Nome inválido. Digite novamente: ");
+                    produto.Nome = Console.ReadLine();
+                }
 
-                Console.Write("Preço: ");
-                produto.Preco = decimal.Parse(Console.ReadLine());
+                produto.Nome = produto.Nome.Trim();
+
+                int quantidade;
+
+                Console.Write("Quantidade inicial: ");
+
+                while (!int.TryParse(Console.ReadLine(), out quantidade) || quantidade < 0)
+                {
+                    Console.Write("Quantidade inválida. Digite zero ou um número positivo: ");
+                }
+
+                produto.Quantidade = quantidade;
+
+                decimal preco;
+
+                Console.Write("Preço unitário: R$ ");
+
+                while (!decimal.TryParse(Console.ReadLine(), out preco) || preco < 0)
+                {
+                    Console.Write("Preço inválido. Digite um valor maior ou igual a zero: ");
+                }
+
+                produto.Preco = preco;
 
                 produtos.Add(produto);
             }
 
-            Console.WriteLine("\nCadastro(s) Concluído! Pressione qualquer tecla para voltar ao menu!");
+            Console.WriteLine("\n[OK] Cadastro concluído com sucesso!");
+            Console.Write("Pressione Enter para voltar ao menu...");
             Console.ReadLine();
         }
 
         static void ListarProdutos()
         {
             Console.Clear();
-            Console.WriteLine("Lista dos produtos: ");
+            Console.WriteLine("========== PRODUTOS CADASTRADOS ==========");
 
             foreach (Produto produto in produtos)
             {
-                Console.WriteLine($"\nProduto: {produto.Nome} | Quantidade: {produto.Quantidade} | Preço: {produto.Preco}");
+                Console.WriteLine($"\nProduto: {produto.Nome}");
+                Console.WriteLine($"Quantidade: {produto.Quantidade} | Preço unitário: {produto.Preco:C2}");
+
                 decimal estoque_produto = produto.Quantidade * produto.Preco;
-                Console.WriteLine($"Valor em estoque: {estoque_produto}");
+
+                Console.WriteLine($"Valor em estoque: {estoque_produto:C2}");
+                Console.WriteLine("-----------------------------------------");
             }
 
-            Console.Write("\nPressione qualquer tecla para voltar ao menu!");
+            Console.Write("\nPressione Enter para voltar ao menu...");
             Console.ReadLine();
         }
 
         static void ProcurarProduto()
         {
             bool invalido = true;
+
             Console.Clear();
-            Console.Write("Digite o nome do produto: ");
+            Console.WriteLine("========== PESQUISAR PRODUTO ==========");
+            Console.Write("\nDigite o nome do produto: ");
 
             while (invalido)
             {
@@ -75,32 +112,32 @@ namespace Gerenciador_Produtos
 
                 if (string.IsNullOrWhiteSpace(produto_pesquisado))
                 {
-                    Console.WriteLine("Por favor, digite um produto válido!");
+                    Console.Write("Nome inválido. Digite novamente: ");
                 }
                 else
                 {
-                    // Procurar produto na lista
                     var encontrados = produtos.Where(p => p.Nome != null && p.Nome.ToLower().Contains(produto_pesquisado.ToLower())).ToList();
-    
+
                     if (encontrados.Count == 0)
                     {
-                        Console.WriteLine("Produto não encontrado. Tente novamente:");
+                        Console.Write("Nenhum produto encontrado. Tente novamente: ");
                     }
                     else
                     {
                         foreach (var produto in encontrados)
                         {
-                            Console.WriteLine($"\nProduto: {produto.Nome} | Quantidade: {produto.Quantidade} | Preço: {produto.Preco}");
+                            Console.WriteLine($"\nProduto: {produto.Nome}");
+                            Console.WriteLine($"Quantidade: {produto.Quantidade} | Preço unitário: {produto.Preco:C2}");
+                            Console.WriteLine("-----------------------------------------");
                         }
+
                         invalido = false;
                     }
                 }
-
             }
 
-            Console.Write("\nPressione qualquer tecla para voltar ao menu!");
+            Console.Write("\nPressione Enter para voltar ao menu...");
             Console.ReadLine();
-
         }
 
         static void AtualizarQuantidade()
@@ -111,13 +148,14 @@ namespace Gerenciador_Produtos
 
             while (encontrado)
             {
+                Console.WriteLine("========== ATUALIZAR ESTOQUE ==========");
+                Console.Write("\nNome do produto: ");
 
-                Console.Write("Digite o produto que deseja: ");
                 string produtoAtualizar = Console.ReadLine();
-                
+
                 if (string.IsNullOrWhiteSpace(produtoAtualizar))
                 {
-                    Console.WriteLine("Por favor, digite um produto válido!");
+                    Console.WriteLine("Nome inválido. Tente novamente.");
                 }
                 else
                 {
@@ -125,7 +163,7 @@ namespace Gerenciador_Produtos
 
                     if (produtoEncontrado.Count == 0)
                     {
-                        Console.WriteLine($"Nenhum produto ({produtoAtualizar}) encontrado!");
+                        Console.WriteLine($"\nNenhum produto encontrado para: {produtoAtualizar}");
                     }
                     else
                     {
@@ -136,69 +174,78 @@ namespace Gerenciador_Produtos
 
                             Console.Clear();
 
-                            Console.WriteLine("Produto encontrado!");
+                            Console.WriteLine("========== PRODUTO ENCONTRADO ==========");
 
-                            Console.WriteLine($"\nProduto: {produto.Nome} | Quantidade Atual: {produto.Quantidade}.");
+                            Console.WriteLine($"\nProduto: {produto.Nome}");
+                            Console.WriteLine($"Estoque atual: {produto.Quantidade} unidade(s)");
 
                             encontrado = false;
 
                             while (valido)
                             {
-                                Console.Write("\nDeseja adicionar ou subtrair a quantidade? ");
+                                Console.Write("\nO que deseja fazer? (adicionar/subtrair): ");
                                 string resposta = Console.ReadLine();
 
-
-                                if (resposta.ToLower().Contains("adi"))
+                                if (resposta?.Trim().ToLower() == "adicionar")
                                 {
                                     bool menorZero = true;
 
-
                                     while (menorZero)
                                     {
-                                        Console.Write("\nDigite a quantidade ser adicionada produto: ");
-                                        quantidade_atualizada = int.Parse(Console.ReadLine());
-                                        
+                                        Console.Write("\nQuantidade a adicionar: ");
+
+                                        while (!int.TryParse(Console.ReadLine(), out quantidade_atualizada))
+                                        {
+                                            Console.Write("Entrada inválida. Digite um número inteiro: ");
+                                        }
+
                                         if (quantidade_atualizada <= 0)
                                         {
-                                            Console.WriteLine("Digite um valor maior que 0!");
+                                            Console.WriteLine("[ERRO] A quantidade deve ser maior que zero.");
                                         }
                                         else
                                         {
                                             produto.Quantidade += quantidade_atualizada;
 
                                             Console.Clear();
-                                            Console.WriteLine("Quantidade Atualizada!");
-                                            Console.WriteLine($"Produto: {produto.Nome} | Quantidade Atual: {produto.Quantidade}.");
+
+                                            Console.WriteLine("========== ESTOQUE ATUALIZADO ==========");
+                                            Console.WriteLine($"Produto: {produto.Nome}");
+                                            Console.WriteLine($"Nova quantidade: {produto.Quantidade} unidade(s)");
 
                                             menorZero = false;
                                             valido = false;
                                         }
                                     }
-              
                                 }
-                                else if (resposta.ToLower().Contains("sub"))
+                                else if (resposta?.Trim().ToLower() == "subtrair")
                                 {
                                     bool maiorZero = true;
 
                                     while (maiorZero)
                                     {
-                                        Console.WriteLine("\nDigite a quantidade a ser retirada produto: ");
-                                        quantidade_atualizada = int.Parse(Console.ReadLine());
+                                        Console.Write("\nQuantidade a retirar: ");
+
+                                        while (!int.TryParse(Console.ReadLine(), out quantidade_atualizada))
+                                        {
+                                            Console.Write("Entrada inválida. Digite um número inteiro: ");
+                                        }
 
                                         if (quantidade_atualizada > produto.Quantidade)
                                         {
-                                            Console.WriteLine("Estoque insuficiente!");
+                                            Console.WriteLine($"[ERRO] Estoque insuficiente. Disponível: {produto.Quantidade} unidade(s).");
                                         }
                                         else if (quantidade_atualizada <= 0)
                                         {
-                                            Console.WriteLine("Digite uma quantidade maior que zero!");
+                                            Console.WriteLine("[ERRO] A quantidade deve ser maior que zero.");
                                         }
                                         else
                                         {
                                             produto.Quantidade -= quantidade_atualizada;
 
-                                            Console.WriteLine("Quantidade Atualizada!");
-                                            Console.WriteLine($"Produto: {produto.Nome} | Quantidade Atual: {produto.Quantidade}.");
+                                            Console.WriteLine("========== ESTOQUE ATUALIZADO ==========");
+                                            Console.WriteLine($"Produto: {produto.Nome}");
+                                            Console.WriteLine($"Nova quantidade: {produto.Quantidade} unidade(s)");
 
                                             maiorZero = false;
                                             valido = false;
@@ -207,8 +254,7 @@ namespace Gerenciador_Produtos
                                 }
                                 else
                                 {
-                                    Console.WriteLine("Resposta inválida!");
-
+                                    Console.WriteLine("Opção inválida. Digite adicionar ou subtrair.");
                                 }
                             }
                         }
@@ -216,7 +262,7 @@ namespace Gerenciador_Produtos
                 }
             }
 
-            Console.WriteLine("\nPressione Enter pra voltar Menu");
+            Console.Write("\nPressione Enter para voltar ao menu...");
             Console.ReadLine();
         }
 
@@ -231,27 +277,34 @@ namespace Gerenciador_Produtos
 
             return total;
         }
+
         static void Main(string[] args)
         {
-
             bool executando = true;
-
 
             while (executando)
             {
+                int opcao;
+
                 Console.Clear();
 
-                Console.WriteLine("===== Sistema de Estoque =====");
-                Console.WriteLine("\n1 - Cadastrar Produto");
-                Console.WriteLine("2 - Listar Produtos");
-                Console.WriteLine("3 - Pesquisar Produto");
-                Console.WriteLine("4 - Valor total do estoque");
+                Console.WriteLine("========== SISTEMA DE ESTOQUE ==========");
+                Console.WriteLine("----------------------------------------");
+                Console.WriteLine("1 - Cadastrar produto");
+                Console.WriteLine("2 - Listar produtos");
+                Console.WriteLine("3 - Pesquisar produto");
+                Console.WriteLine("4 - Consultar valor total do estoque");
                 Console.WriteLine("5 - Atualizar estoque");
                 Console.WriteLine("0 - Sair");
+                Console.WriteLine("----------------------------------------");
 
                 Console.Write("\nOpção: ");
 
-                var opcao = int.Parse(Console.ReadLine());
+                while (!int.TryParse(Console.ReadLine(), out opcao)
+                       || opcao < 0 || opcao > 5)
+                {
+                    Console.Write("Opção inválida. Digite um número de 0 a 5: ");
+                }
 
                 switch (opcao)
                 {
@@ -269,10 +322,11 @@ namespace Gerenciador_Produtos
 
                     case 4:
                         Console.Clear();
-                        
-                        Console.Write($"Valor total em estoque {ValorTotal(produtos)}");
 
-                        Console.Write("\nPressione qualquer tecla para voltar ao menu!");
+                        Console.WriteLine("========== VALOR TOTAL DO ESTOQUE ==========");
+                        Console.WriteLine($"\nTotal: {ValorTotal(produtos):C2}");
+
+                        Console.Write("\nPressione Enter para voltar ao menu...");
                         Console.ReadLine();
                         break;
 
@@ -285,15 +339,11 @@ namespace Gerenciador_Produtos
                         break;
 
                     default:
-                        Console.WriteLine("Opção inválida!");
+                        Console.WriteLine("Opção inválida. Tente novamente.");
                         Console.ReadLine();
                         break;
                 }
-
             }
-
-            
-
         }
     }
 }
